@@ -1,34 +1,28 @@
 package com.example.cameraxdemo
 
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
 import android.Manifest
+import android.content.ContentValues
 import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
+import android.widget.Button
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import java.util.concurrent.Executors
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.*
 import androidx.camera.video.VideoCapture
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
+import com.example.cameraxdemo.databinding.ActivityMainBinding
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
-import android.provider.MediaStore
-
-import android.content.ContentValues
-import android.os.Build
-import android.view.KeyEvent
-import android.view.ScaleGestureDetector
-import android.widget.Button
-import android.widget.SeekBar
-import androidx.camera.core.impl.utils.executor.CameraXExecutors
-import androidx.camera.view.PreviewView
-import com.example.cameraxdemo.databinding.ActivityMainBinding
+import java.util.concurrent.Executors
 
 typealias LumaListener = (luma: Double) -> Unit
 
@@ -42,8 +36,6 @@ class MainActivity : AppCompatActivity() {
     private var recording: Recording? = null
 
     private lateinit var cameraExecutor: ExecutorService
-    private lateinit var cameraInfo: CameraInfo
-    private lateinit var cameraControl: CameraControl
     private var lensFacing: CameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -214,14 +206,6 @@ class MainActivity : AppCompatActivity() {
             videoCapture = VideoCapture.withOutput(recorder)
 
             imageCapture = ImageCapture.Builder().build()
-//
-//            val imageAnalyzer = ImageAnalysis.Builder()
-//                .build()
-//                .also {
-//                    it.setAnalyzer(cameraExecutor, LuminosityAnalyzer { luma ->
-//                        Log.d(TAG, "Average luminosity: $luma")
-//                    })
-//                }
 
             val cameraSelector = lensFacing
 
@@ -280,28 +264,6 @@ class MainActivity : AppCompatActivity() {
                     add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 }
             }.toTypedArray()
-    }
-
-    private class LuminosityAnalyzer(private val listener: LumaListener) : ImageAnalysis.Analyzer {
-
-        private fun ByteBuffer.toByteArray(): ByteArray {
-            rewind()    // Rewind the buffer to zero
-            val data = ByteArray(remaining())
-            get(data)   // Copy the buffer into a byte array
-            return data // Return the byte array
-        }
-
-        override fun analyze(image: ImageProxy) {
-
-            val buffer = image.planes[0].buffer
-            val data = buffer.toByteArray()
-            val pixels = data.map { it.toInt() and 0xFF }
-            val luma = pixels.average()
-
-            listener(luma)
-
-            image.close()
-        }
     }
 
 }
