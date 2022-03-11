@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
 
-        CameraSelector.LENS_FACING_BACK
+        // CameraSelector.LENS_FACING_BACK
 
         // Create time stamped name and MediaStore entry.
         val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
