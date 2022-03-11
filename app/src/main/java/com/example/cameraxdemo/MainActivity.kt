@@ -22,6 +22,12 @@ import android.provider.MediaStore
 
 import android.content.ContentValues
 import android.os.Build
+import android.view.KeyEvent
+import android.view.ScaleGestureDetector
+import android.widget.Button
+import android.widget.SeekBar
+import androidx.camera.core.impl.utils.executor.CameraXExecutors
+import androidx.camera.view.PreviewView
 import com.example.cameraxdemo.databinding.ActivityMainBinding
 
 typealias LumaListener = (luma: Double) -> Unit
@@ -36,6 +42,9 @@ class MainActivity : AppCompatActivity() {
     private var recording: Recording? = null
 
     private lateinit var cameraExecutor: ExecutorService
+    private lateinit var cameraInfo: CameraInfo
+    private lateinit var cameraControl: CameraControl
+    private var lensFacing: CameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +59,11 @@ class MainActivity : AppCompatActivity() {
                 this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
 
+        val switchButton: Button = findViewById(R.id.btnSwapCamera)
+        switchButton.setOnClickListener {
+            flipCamera()
+        }
+
         // Set up the listeners for take photo and video capture buttons
         viewBinding.imageCaptureButton.setOnClickListener { takePhoto() }
         viewBinding.videoCaptureButton.setOnClickListener { captureVideo() }
@@ -57,9 +71,20 @@ class MainActivity : AppCompatActivity() {
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
+    private fun flipCamera()
+    {
+        if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA)
+            lensFacing = CameraSelector.DEFAULT_BACK_CAMERA
+        else if (lensFacing == CameraSelector.DEFAULT_BACK_CAMERA)
+            lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA
+        startCamera()
+    }
+
     private fun takePhoto() {
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
+
+        CameraSelector.LENS_FACING_BACK
 
         // Create time stamped name and MediaStore entry.
         val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
@@ -198,8 +223,7 @@ class MainActivity : AppCompatActivity() {
 //                    })
 //                }
 
-            // Select back camera as a default
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            val cameraSelector = lensFacing
 
             try {
                 // Unbind use cases before rebinding
